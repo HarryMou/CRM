@@ -11,6 +11,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/settings/user")
@@ -21,13 +23,15 @@ public class UserController {
 
     @RequestMapping("/login.do")
     @ResponseBody
-    public ModelAndView login(String loginAct, String loginPwd, HttpServletRequest request) throws LoginException {
+    private Map<String,Object> login(String loginAct, String loginPwd, HttpServletRequest request) throws LoginException {
         loginPwd = MD5Util.getMD5(loginPwd);
         String ip = request.getRemoteAddr();
         User user = userService.login(loginAct,loginPwd,ip);
-        ModelAndView mv = new ModelAndView();
-        mv.addObject("loginAct",user.getLoginAct());
-        mv.setViewName("workbench/index.html");
-        return mv;
+        if(user!=null){
+            request.getSession().setAttribute("user",user);
+        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("success",true);
+        return map;
     }
 }

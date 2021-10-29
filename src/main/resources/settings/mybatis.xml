@@ -9,9 +9,11 @@
 
     <typeAliases>
         <package name="com.usth.settings.domain"/>
+        <package name="com.usth.workbench.domain"/>
     </typeAliases>
 
     <mappers>
         <package name="com.usth.settings.dao"/>
+        <package name="com.usth.workbench.dao"/>
     </mappers>
 </configuration>

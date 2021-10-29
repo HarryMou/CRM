@@ -6,10 +6,12 @@ import com.usth.settings.domain.User;
 import com.usth.settings.service.UserService;
 import com.usth.utils.DateTimeUtil;
 import jdk.internal.org.objectweb.asm.Handle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -42,5 +44,12 @@ public class UserServiceImpl implements UserService {
             throw new LoginException("ip地址受限，请联系管理员");
         }
         return user;
+    }
+
+    @Override
+    public List<User> getUserList() {
+        List<User> list = userDao.getUserList();
+        System.out.println(list);
+        return list;
     }
 }

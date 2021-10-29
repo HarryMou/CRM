@@ -16,12 +16,16 @@
 
         $(function () {
 
+            //将登录页置顶
+            if(window.top!=window){
+                window.top.location = window.location
+            }
+
             //页面加载完毕后让用户的文本框自动获得焦点
             $("#loginAct").focus();
 
             //页面加载完毕后将用户文本框内容清空
             $("#loginAct").val("");
-
             //为登录按钮绑定事件，执行登录
             $("#submitBtn").click(function () {
                 login();
@@ -60,7 +64,10 @@
                 type:"post",
                 dataType:"json",
                 success:function (res) {
-
+                    $("#msg").html(res.msg)
+                    if(res.success){
+                        window.location.href = "workbench/index.jsp"
+                    }
                 }
             })
         }
@@ -80,7 +87,7 @@
         <div class="page-header">
             <h1>登录</h1>
         </div>
-        <form action="workbench/index.html" class="form-horizontal" role="form">
+        <form action="workbench/index.jsp" class="form-horizontal" role="form">
             <div class="form-group form-group-lg">
                 <div style="width: 350px;">
                     <input class="form-control" type="text" placeholder="用户名" id="loginAct">
@@ -90,7 +97,7 @@
                 </div>
                 <div class="checkbox" style="position: relative;top: 30px; left: 10px;">
 
-                    <span id="msg" style="color: red"></span>
+                    <span id="msg" style="color: red">${msg}</span>
 
                 </div>
 <%--                按钮写在表单中默认的行为就是提交表单，将按钮的类型设置为button，表示其只是button--%>

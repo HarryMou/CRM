@@ -17,7 +17,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>myweb</servlet-name>
-        <url-pattern>*.action</url-pattern>
+        <url-pattern>*.do</url-pattern>
     </servlet-mapping>
 <!--    注册监听器创建Spring容器-->
     <context-param>
@@ -46,7 +46,16 @@
     </filter>
     <filter-mapping>
         <filter-name>CharacterEncodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>*.do</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>LoginFilter</filter-name>
+        <filter-class>com.usth.filter.LoginFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>LoginFilter</filter-name>
+        <url-pattern>*.jsp</url-pattern>
     </filter-mapping>
 
 </web-app>
