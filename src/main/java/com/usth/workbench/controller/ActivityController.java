@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +34,7 @@ public class ActivityController {
     private ActivityService activityService;
     @Resource
     private UserService userService;
+
 
     @RequestMapping("/getUserList.do")
     @ResponseBody
@@ -93,5 +95,51 @@ public class ActivityController {
         resMap.put("total",vo.getTotal());
         resMap.put("dataList",vo.getDataList());
         return resMap;
+    }
+
+    @RequestMapping("/deleteActivity.do")
+    private void deleteActivity(String[] ids, HttpServletResponse response){
+        boolean flag = activityService.deleteActivity(ids);
+        String json = "{\"success\":" + flag + "}";
+        PrintWriter pw = null;
+        try {
+            pw = response.getWriter();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.print(json);
+    }
+
+    @RequestMapping("/getUserListAndActivity.do")
+    @ResponseBody
+    private Map<String,Object> getUserListAndActivity(String id){
+        return activityService.getUserListAndActivity(id);
+    }
+
+    @RequestMapping("/updateActivity.do")
+    private void updateActivity(Activity activity,HttpServletRequest request,HttpServletResponse response){
+        //修改时间，系统当前时间
+        String editTime = DateTimeUtil.getSysTime();
+        //修改人
+        String editBy = ((User)request.getSession().getAttribute("user")).getName();
+        activity.setEditTime(editTime);
+        activity.setEditBy(editBy);
+        boolean flag = activityService.updateActivity(activity);
+        String json = "{\"success\":"+flag+"}";
+        try {
+            PrintWriter pw = response.getWriter();
+            pw.print(json);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @RequestMapping("/detail.do")
+    private ModelAndView detail(String id){
+        Activity activity = activityService.detail(id);
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("activity",activity);
+        mv.setViewName("/workbench/activity/detail.jsp");
+        return mv;
     }
 }
