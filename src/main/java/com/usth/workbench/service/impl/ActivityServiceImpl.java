@@ -6,6 +6,7 @@ import com.usth.vo.PaginationVO;
 import com.usth.workbench.dao.ActivityDao;
 import com.usth.workbench.dao.ActivityRemarkDao;
 import com.usth.workbench.domain.Activity;
+import com.usth.workbench.domain.ActivityRemark;
 import com.usth.workbench.service.ActivityService;
 import org.omg.PortableInterceptor.ACTIVE;
 import org.springframework.context.ApplicationContext;
@@ -96,4 +97,40 @@ public class ActivityServiceImpl implements ActivityService {
     public Activity detail(String id) {
         return activityDao.detail(id);
     }
+
+    @Override
+    public List<ActivityRemark> getRemarkListByAId(String activityId){
+        return activityRemarkDao.getRemarkListByAId(activityId);
+    }
+
+    @Override
+    public boolean deleteRemark(String id) {
+        boolean flag = true;
+        int count = activityRemarkDao.deleteRemark(id);
+        if(count!=1){
+            flag = false;
+        }
+        return flag;
+    }
+
+    @Override
+    public boolean saveRemark(ActivityRemark activityRemark) {
+        boolean flag = true;
+        int count = activityRemarkDao.saveRemark(activityRemark);
+        if (count!=1){
+            flag = false;
+        }
+        return flag;
+    }
+
+    @Override
+    public boolean updateRemark(ActivityRemark activityRemark) {
+        boolean flag = true;
+        int count = activityRemarkDao.updateRemark(activityRemark);
+        if(count!=1){
+            flag = false;
+        }
+        return flag;
+    }
+
 }

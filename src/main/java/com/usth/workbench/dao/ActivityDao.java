@@ -1,6 +1,7 @@
 package com.usth.workbench.dao;
 
 import com.usth.workbench.domain.Activity;
+import com.usth.workbench.domain.ActivityRemark;
 
 import java.util.List;
 import java.util.Map;
@@ -19,4 +20,5 @@ public interface ActivityDao {
     int updateActivity(Activity activity);
 
     Activity detail(String id);
+
 }

@@ -10,6 +10,7 @@ import com.usth.utils.ForJson;
 import com.usth.utils.UUIDUtil;
 import com.usth.vo.PaginationVO;
 import com.usth.workbench.domain.Activity;
+import com.usth.workbench.domain.ActivityRemark;
 import com.usth.workbench.service.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -141,5 +142,65 @@ public class ActivityController {
         mv.addObject("activity",activity);
         mv.setViewName("/workbench/activity/detail.jsp");
         return mv;
+    }
+
+    @RequestMapping("/getRemarkListByAId.do")
+    @ResponseBody
+    private List<ActivityRemark> getRemarkListByAId(String activityId){
+        return activityService.getRemarkListByAId(activityId);
+    }
+
+    @RequestMapping("/deleteRemark.do")
+    private void deleteRemark(String id,HttpServletResponse response){
+        boolean flag = activityService.deleteRemark(id);
+        String json = "{\"success\":"+flag+"}";
+        PrintWriter pw = null;
+        try {
+            pw = response.getWriter();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.print(json);
+    }
+
+    @RequestMapping("/saveRemark.do")
+    @ResponseBody
+    private Map<String,Object> saveRemark(String noteContent,String activityId,HttpServletRequest request){
+        String id = UUIDUtil.getUUID();
+        String createTime = DateTimeUtil.getSysTime();
+        String createBy =((User) request.getSession().getAttribute("user")).getName();
+        String editFlag = "0";
+        ActivityRemark activityRemark = new ActivityRemark();
+        activityRemark.setActivityId(activityId);
+        activityRemark.setCreateBy(createBy);
+        activityRemark.setEditFlag(editFlag);
+        activityRemark.setCreateTime(createTime);
+        activityRemark.setId(id);
+        activityRemark.setNoteContent(noteContent);
+        boolean flag = activityService.saveRemark(activityRemark);
+        Map<String,Object> map = new HashMap<>();
+        map.put("success",flag);
+        map.put("remarkInfo",activityRemark);
+        return map;
+    }
+
+    @RequestMapping("/updateRemark.do")
+    private void updateRemark(ActivityRemark activityRemark,HttpServletResponse response,HttpServletRequest request){
+        String editTime = DateTimeUtil.getSysTime();
+        String editBy = ((User)request.getSession().getAttribute("user")).getName();
+        String editFlag = "1";
+        activityRemark.setEditFlag(editFlag);
+        activityRemark.setEditBy(editBy);
+        activityRemark.setEditTime(editTime);
+        System.out.println(activityRemark);
+        boolean flag = activityService.updateRemark(activityRemark);
+        String json = "{\"success\":"+flag+"}";
+        PrintWriter pw = null;
+        try {
+            pw = response.getWriter();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.print(json);
     }
 }
