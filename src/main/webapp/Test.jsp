@@ -21,5 +21,14 @@ success:function (res) {
 
 }
 })
+
+$(".time").datetimepicker({
+minView: "month",
+language:  'zh-CN',
+format: 'yyyy-mm-dd',
+autoclose: true,
+todayBtn: true,
+pickerPosition: "bottom-left"
+});
 </body>
 </html>

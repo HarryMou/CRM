@@ -51,8 +51,9 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					$("#create-owner").html(html);
 				}
 			})
+			var id = "${user.id}"
 			//在js中使用el表达式，一定要在字符串中
-			$("#create-owner").val("${user.id}")
+			$("#create-owner").val(id)
 			//找到需要操作的模态窗口的jquert对象，调用modal方法,show/hide
 			$("#createActivityModal").modal("show");
 		})
@@ -81,9 +82,14 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						})
 						$("#edit-owner").html(html)
 						//单条activity
+						var $options = $("#edit-owner>option")
+						$.each($options,function (i,n) {
+							if (res.activity.owner == n.name){
+								$(this).attr("selected","selected")
+							}
+						})
 						$("#edit-name").val(res.activity.name)
 						$("#edit-id").val(res.activity.id)
-						$("#edit-owner").val(res.activity.owner)
 						$("#edit-startDate").val(res.activity.startDate)
 						$("#edit-endDate").val(res.activity.endDate)
 						$("#edit-cost").val(res.activity.cost)
@@ -306,7 +312,6 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						pageList(data.currentPage , data.rowsPerPage);
 					}
 				});
-			//未解决：所有者查询不到(sql语句没执行)，日期查询异常,不包含当天的
 			}
 		})
 	}
@@ -530,7 +535,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 <%--						</tr>--%>
 <%--                        <tr class="active">--%>
 <%--                            <td><input type="checkbox" /></td>--%>
-<%--                            <td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='detail.html';">发传单</a></td>--%>
+<%--                            <td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='detail.jsp';">发传单</a></td>--%>
 <%--                            <td>zhangsan</td>--%>
 <%--                            <td>2020-10-10</td>--%>
 <%--                            <td>2020-10-20</td>--%>
