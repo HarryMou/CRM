@@ -1,5 +1,6 @@
 package com.usth.workbench.controller;
 
+import com.sun.org.apache.regexp.internal.RE;
 import com.usth.settings.domain.User;
 import com.usth.settings.service.UserService;
 import com.usth.utils.DateTimeUtil;
@@ -7,6 +8,8 @@ import com.usth.utils.UUIDUtil;
 import com.usth.vo.PaginationVO;
 import com.usth.workbench.domain.Activity;
 import com.usth.workbench.domain.Clue;
+import com.usth.workbench.domain.ClueRemark;
+import com.usth.workbench.domain.Tran;
 import com.usth.workbench.service.ActivityService;
 import com.usth.workbench.service.ClueService;
 import org.springframework.stereotype.Controller;
@@ -112,4 +115,124 @@ public class ClueController {
         List<Activity> activities = activityService.getActivityListByClueId(clueId);
         return activities;
     }
+
+    @RequestMapping("/unbund.do")
+    private void unbund(String id,HttpServletResponse response){
+        boolean flag = clueService.unbund(id);
+        String json = "{\"success\":"+flag+"}";
+        PrintWriter pw = null;
+        try {
+            pw = response.getWriter();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.print(json);
+    }
+
+    @RequestMapping("/getActivityListByName.do")
+    @ResponseBody
+    private List<Activity> getActivityListByName(String clueid, String aname){
+        Map<String,String> map = new HashMap<>();
+        map.put("clueid",clueid);
+        map.put("aname",aname);
+        List<Activity> activityList = activityService.getActivityListByName(map);
+        return activityList;
+    }
+
+    @RequestMapping("/bund.do")
+    private void bund(String[] aid, String cid, HttpServletResponse response) {
+        boolean flag = clueService.bund(aid, cid);
+        String json = "{\"success\":" + flag + "}";
+        PrintWriter pw = null;
+        try {
+            pw = response.getWriter();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.print(json);
+    }
+
+    @RequestMapping("/getActivityListByNameConvert.do")
+    @ResponseBody
+    private List<Activity> getActivityListByNameConvert(String aname){
+        List<Activity> activityList = activityService.getActivityListByNameConvert(aname);
+        return activityList;
+    }
+
+    @RequestMapping("/convert.do")
+    private String conver(String clueId, String flag, Tran tran,HttpServletRequest request){
+        ModelAndView mv = new ModelAndView();
+        String createBy = ((User)request.getSession().getAttribute("user")).getName();
+        boolean flag1 = clueService.convert(clueId, tran, createBy, flag);
+        if (flag1){
+            return "/workbench/clue/index.jsp";
+        }
+        return "/workbench/clue/index.jsp";
+    }
+
+    @RequestMapping("/saveRemark.do")
+    @ResponseBody
+    private Map<String,Object> saveRemark(String noteContent, String clueId,HttpServletRequest request){
+        String id = UUIDUtil.getUUID();
+        String createTime = DateTimeUtil.getSysTime();
+        String createBy = ((User)request.getSession().getAttribute("user")).getName();
+        String editFlag = "0";
+        ClueRemark clueRemark = new ClueRemark();
+        clueRemark.setNoteContent(noteContent);
+        clueRemark.setEditFlag(editFlag);
+        clueRemark.setId(id);
+        clueRemark.setClueId(clueId);
+        clueRemark.setCreateBy(createBy);
+        clueRemark.setCreateTime(createTime);
+        Map<String,Object> map = new HashMap<>();
+        boolean flag = clueService.saveRemark(clueRemark);
+        map.put("success",flag);
+        map.put("remarkInfo",clueRemark);
+        return map;
+    }
+
+    @RequestMapping("/getRemarkListByCId.do")
+    @ResponseBody
+    private List<ClueRemark> getRemarkListByCId(String clueId){
+        return clueService.getRemarkListByCId(clueId);
+    }
+
+    @RequestMapping("/deleteClues.do")
+    private void deleteClues(String[] ids,HttpServletResponse response){
+        boolean flag = clueService.deleteClues(ids);
+        String json = "{\"success\":" + flag + "}";
+        PrintWriter pw = null;
+        try {
+            pw = response.getWriter();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.print(json);
+    }
+
+    @RequestMapping("/getUserListAndClue.do")
+    @ResponseBody
+    private Map<String,Object> getUserListAndClue(String clueId){
+        return clueService.getUserListAndClue(clueId);
+    }
+
+    @RequestMapping("/updateClue.do")
+    private void updateClue(Clue clue,HttpServletResponse response,HttpServletRequest request){
+        //修改时间，系统当前时间
+        String editTime = DateTimeUtil.getSysTime();
+        //修改人
+        String editBy = ((User)request.getSession().getAttribute("user")).getName();
+        clue.setEditTime(editTime);
+        clue.setEditBy(editBy);
+        boolean flag = clueService.updateClue(clue);
+        String json = "{\"success\":"+flag+"}";
+        try {
+            PrintWriter pw = response.getWriter();
+            pw.print(json);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

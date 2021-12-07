@@ -42,6 +42,7 @@
             <tx:method name="*get*" read-only="true"/>
             <tx:method name="*search*" read-only="true"/>
             <tx:method name="*insert*"/>
+            <tx:method name="*bund*"/>
             <tx:method name="*save*"/>
             <tx:method name="*add*"/>
             <tx:method name="*delete*"/>

@@ -12,7 +12,11 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 <link href="jquery/bootstrap_3.3.0/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
 <script type="text/javascript" src="jquery/jquery-1.11.1-min.js"></script>
 <script type="text/javascript" src="jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
-
+	<script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"></script>
+	<script type="text/javascript" src="jquery/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js"></script>
+	<link rel="stylesheet" type="text/css" href="jquery/bs_pagination/jquery.bs_pagination.min.css">
+	<script type="text/javascript" src="jquery/bs_pagination/jquery.bs_pagination.min.js"></script>
+	<script type="text/javascript" src="jquery/bs_pagination/en.js"></script>
 <script type="text/javascript">
 
 	//默认情况下取消和保存按钮是隐藏的
@@ -54,7 +58,137 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 		});
 
 		showActivityList();
+
+		$("#remarkBody").on("mouseover",".remarkDiv",function(){
+			$(this).children("div").children("div").show();
+		})
+		$("#remarkBody").on("mouseout",".remarkDiv",function(){
+			$(this).children("div").children("div").hide();
+		})
+
+		showRemarkList();
+
+		//为搜索关联市场活动模态窗口中的搜索框绑定事件，通过触发回车键查询并展现
+		$("#aname").keydown(function (event){
+
+			if(event.keyCode==13){
+				// alert("查询并展现市场活动列表")
+				$.ajax({
+					url:"workbench/clue/getActivityListByName.do",
+					dataType:"json",
+					data:{
+						"aname":$.trim($("#aname").val()),
+						"clueid":"${clue.id}"
+					},
+					type:"get",
+					success:function (res) {
+						var html = ""
+						$.each(res,function (i,n) {
+							html +='<tr>'
+							html +='<td><input type="checkbox" name="xz" value="'+n.id+'"/></td>'
+							html +='<td>'+n.name+'</td>'
+							html +='<td>'+n.startDate+'</td>'
+							html +='<td>'+n.endDate+'</td>'
+							html +='<td>'+n.owner+'</td>'
+							html +='</tr>'
+						})
+						$("#bundBody").html(html)
+					}
+				})
+				//展现列表后，记得将模态窗口默认的回车行为禁用掉
+				return false
+			}
+
+		})
+
+		//关联市场活动的按钮绑定
+		$("#bundShow").click(function () {
+
+			$("#bundModal").modal("show")
+		})
+
+		$("#bundBtn").click(function (){
+			var $xz = $("input[name=xz]:checked")
+			if($xz.length==0){
+				alert("请选择需要关联的活动")
+			}else {
+				var param = "cid=${clue.id}&"
+				for(var i=0;i<$xz.length;i++){
+					param += "aid="+$($xz[i]).val()
+					if(i<$xz.length-1){
+						param += '&'
+					}
+				}
+				$.ajax({
+					url:"workbench/clue/bund.do",
+					data:param,
+					dataType:"json",
+					type:"post",
+					success:function (res) {
+					/*
+						res: success
+					 */
+						if(res.success){
+							alert("关联市场活动成功")
+							//刷新关联市场活动的列表
+							showActivityList()
+							//清楚搜索框中的信息
+							$("#aname").val('')
+							//清空bundBody中的内容
+							$("#bundBody").empty()
+							//关闭模态窗口
+							$("#bundModal").modal("hide")
+						}else {
+							alert("关联市场活动失败")
+						}
+					}
+				})
+			}
+		})
+		//添加备注
+		$("#saveRemarkBtn").click(function () {
+			$.ajax({
+				url:"workbench/clue/saveRemark.do",
+				data:{
+					"noteContent":$.trim($("#remark").val()),
+					"clueId":"${clue.id}"
+				},
+				dataType:"json",
+				type:"post",
+				success:function (res) {
+					if (res.success){
+						$("#remark").val("")
+						alert("添加备注成功")
+						var html=""
+
+						html += '<div id="'+ res.remarkInfo.id +'" class="remarkDiv" style="height: 60px;">'
+						html += '<img title="zhangsan" src="image/user-thumbnail.png" style="width: 30px; height:30px;">'
+						html += '<div style="position: relative; top: -40px; left: 40px;" >'
+						html += '<h5  id="h5'+ res.remarkInfo.id +'">'+res.remarkInfo.noteContent+'</h5>'
+						html += '<font color="gray">线索</font> '
+						html +=	' <font color="gray">-</font> '
+						html += '${clue.fullname}${clue.appellation}-${clue.company}'
+						html += '<small style="color: gray;">'+ res.remarkInfo.createTime +'&nbsp;由&nbsp;'
+						html +=  res.remarkInfo.createBy+"</small>"
+						html += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">'
+						html += '<a class="myHref" href="javascript:void(0);" onclick="editRemark(\''+res.remarkInfo.id+'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color:orangered;"></span></a>'
+						html += '&nbsp;&nbsp;&nbsp;&nbsp;'
+						html += '<a class="myHref" href="javascript:void(0);" onclick="deleteRemark(\''+res.remarkInfo.id+'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color:orangered;"></span></a>'
+						html += '</div>'
+						html += '</div>'
+						html += '</div>'
+
+						$("#bz").append(html)
+					}else {
+						alert("添加备注失败")
+					}
+				}
+			})
+		})
+
 	});
+
+	// 加载所有已关联的市场活动
 	function showActivityList() {
 		$.ajax({
 			url:"workbench/clue/getActivityListByClueId.do",
@@ -78,10 +212,64 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			}
 		})
 	}
+
+	//解除市场活动关联
 	function unbund(id) {
-		alert(id)
+		$.ajax({
+			url:"workbench/clue/unbund.do",
+			data:{
+				"id":id
+			},
+			dataType:"json",
+			type:"get",
+			success:function (res) {
+				if(res.success){
+					alert("解除关联成功")
+					showActivityList()
+				}else{
+					alert("解除关联失败")
+				}
+			}
+		})
 	}
-	
+
+	//加载所有备注信息
+	function showRemarkList() {
+
+		$.ajax({
+			url:"workbench/clue/getRemarkListByCId.do",
+			data:{
+				"clueId":"${clue.id}",
+			},
+			dataType:"json",
+			type:"get",
+			success:function (res) {
+				var html = ""
+				$.each(res,function (i,n) {
+
+					html += '<div id="'+n.id+'" class="remarkDiv" style="height: 60px;">'
+					html += '<img title="zhangsan" src="image/user-thumbnail.png" style="width: 30px; height:30px;">'
+					html += '<div style="position: relative; top: -40px; left: 40px;" >'
+					html += '<h5 id="h5'+ n.id +'">'+n.noteContent+'</h5>'
+					html += '<font color="gray">线索</font> '
+					html +=	' <font color="gray">-</font> '
+					html += '${clue.fullname}${clue.appellation}-${clue.company}'
+					html += '<small style="color: gray;">'+ (n.editFlag==0?n.createTime:n.editTime) +'&nbsp;由&nbsp;'
+					html +=  (n.editFlag==0?n.createBy:n.editBy) +"</small>"
+					html += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">'
+					html += '<a class="myHref" href="javascript:void(0);" onclick="editRemark(\''+n.id+'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color:orangered;"></span></a>'
+					html += '&nbsp;&nbsp;&nbsp;&nbsp;'
+					html += '<a class="myHref" href="javascript:void(0);" onclick="deleteRemark(\''+n.id+'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color:orangered;"></span></a>'
+					html += '</div>'
+					html += '</div>'
+					html += '</div>'
+
+				})
+				$("#bz").html(html)
+			}
+		})
+
+	}
 </script>
 
 </head>
@@ -101,7 +289,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					<div class="btn-group" style="position: relative; top: 18%; left: 8px;">
 						<form class="form-inline" role="form">
 						  <div class="form-group has-feedback">
-						    <input type="text" class="form-control" style="width: 300px;" placeholder="请输入市场活动名称，支持模糊查询">
+						    <input type="text" class="form-control" id="aname" style="width: 300px;" placeholder="请输入市场活动名称，支持模糊查询">
 						    <span class="glyphicon glyphicon-search form-control-feedback"></span>
 						  </div>
 						</form>
@@ -117,27 +305,14 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 								<td></td>
 							</tr>
 						</thead>
-						<tbody>
-							<tr>
-								<td><input type="checkbox"/></td>
-								<td>发传单</td>
-								<td>2020-10-10</td>
-								<td>2020-10-20</td>
-								<td>zhangsan</td>
-							</tr>
-							<tr>
-								<td><input type="checkbox"/></td>
-								<td>发传单</td>
-								<td>2020-10-10</td>
-								<td>2020-10-20</td>
-								<td>zhangsan</td>
-							</tr>
+						<tbody id="bundBody">
+
 						</tbody>
 					</table>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">关联</button>
+					<button type="button" class="btn btn-primary" id="bundBtn">关联</button>
 				</div>
 			</div>
 		</div>
@@ -310,7 +485,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			<h3>${clue.fullname}${clue.appellation}<small>${clue.company}</small></h3>
 		</div>
 		<div style="position: relative; height: 50px; width: 500px;  top: -72px; left: 700px;">
-			<button type="button" class="btn btn-default" onclick="window.location.href='workbench/clue/convert.jsp';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
+			<button type="button" class="btn btn-default" onclick="window.location.href='workbench/clue/convert.jsp?id=${clue.id}&fullname=${clue.fullname}&appellation=${clue.appellation}&company=${clue.company}&owner=${clue.owner}';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
 			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#editClueModal"><span class="glyphicon glyphicon-edit"></span> 编辑</button>
 			<button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 		</div>
@@ -426,12 +601,31 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			</div>
 			
 			<div>
-				<a href="javascript:void(0);" data-toggle="modal" data-target="#bundModal" style="text-decoration: none;"><span class="glyphicon glyphicon-plus"></span>关联市场活动</a>
+				<a href="javascript:void(0);" id="bundShow" style="text-decoration: none;"><span class="glyphicon glyphicon-plus"></span>关联市场活动</a>
 			</div>
 		</div>
 	</div>
-	
-	
+
+<%--	//备注--%>
+	<br>
+	<div id="remarkBody" style="position: relative; top: 30px; left: 40px;">
+		<div class="page-header">
+			<h4>备注</h4>
+		</div>
+		<div id="bz">
+
+		</div>
+
+		<div id="remarkDiv" style="background-color: #E6E6E6; width: 870px; height: 90px;">
+			<form role="form" style="position: relative;top: 10px; left: 10px;">
+				<textarea id="remark" class="form-control" style="width: 850px; resize : none;" rows="2"  placeholder="添加备注..."></textarea>
+				<p id="cancelAndSaveBtn" style="position: relative;left: 737px; top: 10px; display: none;">
+					<button id="cancelBtn" type="button" class="btn btn-default">取消</button>
+					<button type="button" class="btn btn-primary" id="saveRemarkBtn">保存</button>
+				</p>
+			</form>
+		</div>
+	</div>
 	<div style="height: 200px;"></div>
 </body>
 </html>

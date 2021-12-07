@@ -5,6 +5,7 @@ import com.usth.settings.domain.User;
 import com.usth.vo.PaginationVO;
 import com.usth.workbench.dao.ActivityDao;
 import com.usth.workbench.dao.ActivityRemarkDao;
+import com.usth.workbench.dao.ClueActivityRelationDao;
 import com.usth.workbench.domain.Activity;
 import com.usth.workbench.domain.ActivityRemark;
 import com.usth.workbench.service.ActivityService;
@@ -25,6 +26,8 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityDao activityDao;
     @Resource
     private ActivityRemarkDao activityRemarkDao;
+    @Resource
+    private ClueActivityRelationDao clueActivityRelationDao;
     @Resource
     private UserDao userDao;
 //    private ApplicationContext ac = new ClassPathXmlApplicationContext("settings/ApplicationContext.xml");
@@ -60,6 +63,13 @@ public class ActivityServiceImpl implements ActivityService {
         int count2 = activityRemarkDao.deleteByAids(ids);
         if(count1!=count2){
             flag = false;
+        }
+        //查询市场活动关联的线索的数量
+        int count4 = clueActivityRelationDao.getCountByAids(ids);
+        //删除关联信息，返回受影响的条数
+        int count5 = clueActivityRelationDao.deleteByAids(ids);
+        if(count4!=count5){
+            flag=false;
         }
         //删除市场活动
         int count3 = activityDao.deleteActivity(ids);
@@ -137,6 +147,18 @@ public class ActivityServiceImpl implements ActivityService {
     public List<Activity> getActivityListByClueId(String clueId) {
         List<Activity> activities = activityDao.getActivityListByClueId(clueId);
         return activities;
+    }
+
+    @Override
+    public List<Activity> getActivityListByName(Map<String, String> map) {
+        List<Activity> list = activityDao.getActivityListByName(map);
+        return list;
+    }
+
+    @Override
+    public List<Activity> getActivityListByNameConvert(String aname) {
+        List<Activity> activityList = activityDao.getActivityListByNameConvert(aname);
+        return activityList;
     }
 
 }

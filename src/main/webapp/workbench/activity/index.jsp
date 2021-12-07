@@ -84,7 +84,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						//单条activity
 						var $options = $("#edit-owner>option")
 						$.each($options,function (i,n) {
-							if (res.activity.owner == n.name){
+							if (res.activity.owner == n.value){
 								$(this).attr("selected","selected")
 							}
 						})
@@ -206,7 +206,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			if($xz.length==0){
 				alert("请选择需要删除的记录")
 			}else{
-				if (confirm("确定删除所选择的记录吗？")){
+				if (confirm("确定删除所选择的记录吗？此操作也将删除跟此活动关联的线索")){
 					//拼接参数
 					var param = "";
 					//将$xz中每一个dom对象都取出来，取其value值

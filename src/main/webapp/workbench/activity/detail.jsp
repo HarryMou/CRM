@@ -83,6 +83,12 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 						html += "<option value='"+n.id+"'>"+n.name+"</option>";
 					})
 					$("#edit-owner").html(html);
+                    var $options = $("#edit-owner>option")
+                    $.each($options,function (i,n) {
+                        if (res.clue.owner == n.value){
+                            $(this).attr("selected","selected")
+                        }
+                    })
 					//单条activity
 					$("#edit-id").val("${activity.id}")
 					$("#edit-name").val("${activity.name}")

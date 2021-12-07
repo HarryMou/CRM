@@ -17,4 +17,12 @@ public interface ClueDao {
     List<Activity> getClueByCondition(Map<String, Object> map);
 
     Clue detail(String id);
+
+    Clue getClueById(String clueId);
+
+    int delete(Clue clue);
+
+    int deleteClues(String[] ids);
+
+    int updateClue(Clue clue);
 }
